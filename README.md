@@ -1,75 +1,306 @@
-<header>
+<!DOCTYPE html>
+<html lang="bg">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Регистрация и Вход</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+        .container {
+            width: 100%;
+            max-width: 400px;
+            background: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        h1, h2 {
+            text-align: center;
+            color: #333;
+        }
+        form {
+            display: flex;
+            flex-direction: column;
+        }
+        input {
+            margin: 10px 0;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        button {
+            padding: 10px;
+            background-color: #4CAF50;
+            color: #fff;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        .link {
+            text-align: center;
+            margin-top: 10px;
+        }
+        .link a {
+            color: #007BFF;
+            text-decoration: none;
+        }
+        .link a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
 
-<!--
-  <<< Author notes: Course header >>>
-  Include a 1280×640 image, course title in sentence case, and a concise description in emphasis.
-  In your repository settings: enable template repository, add your 1280×640 social image, auto delete head branches.
-  Add your open source license, GitHub uses MIT license.
--->
+<div class="container" id="auth-container">
+    <h1>Вход</h1>
+    <form id="login-form" onsubmit="return false;">
+        <input type="email" id="login-email" placeholder="Имейл" required>
+        <div>
+            <input type="password" id="login-password" placeholder="Парола" required>
+            <input type="checkbox" id="show-password-login" onclick="togglePassword('login-password')"> Показване
+        </div>
+        <button type="button" onclick="login()">Вход</button>
+    </form>
+    <div class="link">
+        <a href="#" onclick="showForgotPassword()">Забравена парола?</a>
+    </div>
+    <div class="link">
+        <a href="#" onclick="showRegistration()">Нямате акаунт? Регистрирайте се</a>
+    </div>
+</div>
 
-# GitHub Pages
+<div class="container" id="register-container" style="display: none;">
+    <h2>Регистрация</h2>
+    <form id="register-form" onsubmit="return false;">
+        <input type="email" id="register-email" placeholder="Имейл" required>
+        <div>
+            <input type="password" id="register-password" placeholder="Парола" required>
+            <input type="checkbox" id="show-password-register" onclick="togglePassword('register-password')"> Показване
+        </div>
+        <button type="button" onclick="register()">Регистрация</button>
+    </form>
+    <div class="link">
+        <a href="#" onclick="showLogin()">Вече имате акаунт? Влезте</a>
+    </div>
+</div>
 
-_Create a site or blog from your GitHub repositories with GitHub Pages._
+<div class="container" id="forgot-password-container" style="display: none;">
+    <h2>Забравена парола</h2>
+    <form id="forgot-password-form" onsubmit="return false;">
+        <input type="email" id="forgot-email" placeholder="Имейл" required>
+        <button type="button" onclick="resetPassword()">Промяна на парола</button>
+    </form>
+    <div class="link">
+        <a href="#" onclick="showLogin()">Върнете се към вход</a>
+    </div>
+</div>
 
-</header>
+<div class="container" id="verification-container" style="display: none;">
+    <h2>Въведете код за двустепенна автентикация</h2>
+    <form id="verification-form" onsubmit="return false;">
+        <input type="text" id="verification-code" placeholder="Въведете кода" required>
+        <button type="button" onclick="verifyCode()">Потвърди код</button>
+    </form>
+</div>
 
-<!--
-  <<< Author notes: Course start >>>
-  Include start button, a note about Actions minutes,
-  and tell the learner why they should take the course.
--->
+<div class="container" id="manager-container" style="display: none;">
+    <h2>Мениджър</h2>
+    <p>Добре дошли в акаунта си!</p>
+    <input type="file" id="file-input" accept=".docx,.pdf,.txt">
+    <button onclick="uploadFile()">Качи файл</button>
+    <div id="download-link-container" style="display: none; margin-top: 20px;">
+        <a id="download-link" href="#" download>Изтегли качения файл</a>
+    </div>
+    <div class="link">
+        <a href="#" onclick="logout()">Изход</a>
+    </div>
+</div>
 
-## Welcome
+<script>
+    // Данни за симулация
+    const users = {};
+    const verificationCodes = {}; // Кодове за двустепенна автентикация
+    let loggedInUser = null;
+    let uploadedFile = null;
 
-With GitHub Pages, you can host project blogs, documentation, resumes, portfolios, or any other static content you'd like. Your GitHub repository can easily become its own website. In this course, we'll show you how to set up your own site or blog using GitHub Pages.
+    // Показване на паролата
+    function togglePassword(inputId) {
+        const passwordField = document.getElementById(inputId);
+        passwordField.type = passwordField.type === 'password' ? 'text' : 'password';
+    }
 
-- **Who is this for**: Beginners, students, project maintainers, small businesses.
-- **What you'll learn**: How to build a GitHub Pages site.
-- **What you'll build**: We'll build a simple GitHub Pages site with a blog. We'll use [Jekyll](https://jekyllrb.com), a static site generator.
-- **Prerequisites**: If you need to learn about branches, commits, and pull requests, take [Introduction to GitHub](https://github.com/skills/introduction-to-github) first.
-- **How long**: This course takes less than one hour to complete.
+    // Превключване между секциите
+    function showLogin() {
+        document.getElementById('auth-container').style.display = 'block';
+        document.getElementById('register-container').style.display = 'none';
+        document.getElementById('forgot-password-container').style.display = 'none';
+        document.getElementById('verification-container').style.display = 'none';
+        document.getElementById('manager-container').style.display = 'none';
 
-In this course, you will:
+        // Автоматично попълване на имейл, ако е запазен в localStorage
+        const savedEmail = localStorage.getItem('email');
+        
+        if (savedEmail) {
+            document.getElementById('login-email').value = savedEmail;
+        }
+    }
 
-1. Enable GitHub Pages
-2. Configure your site
-3. Customize your home page
-4. Create a blog post
-5. Merge your pull request
+    function showRegistration() {
+        document.getElementById('auth-container').style.display = 'none';
+        document.getElementById('register-container').style.display = 'block';
+        document.getElementById('forgot-password-container').style.display = 'none';
+        document.getElementById('verification-container').style.display = 'none';
+        document.getElementById('manager-container').style.display = 'none';
+    }
 
-### How to start this course
+    function showForgotPassword() {
+        document.getElementById('auth-container').style.display = 'none';
+        document.getElementById('register-container').style.display = 'none';
+        document.getElementById('forgot-password-container').style.display = 'block';
+        document.getElementById('verification-container').style.display = 'none';
+        document.getElementById('manager-container').style.display = 'none';
+    }
 
-<!-- For start course, run in JavaScript:
-'https://github.com/new?' + new URLSearchParams({
-  template_owner: 'skills',
-  template_name: 'github-pages',
-  owner: '@me',
-  name: 'skills-github-pages',
-  description: 'My clone repository',
-  visibility: 'public',
-}).toString()
--->
+    function showVerification() {
+        document.getElementById('auth-container').style.display = 'none';
+        document.getElementById('verification-container').style.display = 'block';
+        document.getElementById('manager-container').style.display = 'none';
+    }
 
-[![start-course](https://user-images.githubusercontent.com/1221423/235727646-4a590299-ffe5-480d-8cd5-8194ea184546.svg)](https://github.com/new?template_owner=skills&template_name=github-pages&owner=%40me&name=skills-github-pages&description=My+clone+repository&visibility=public)
+    function showManager() {
+        document.getElementById('auth-container').style.display = 'none';
+        document.getElementById('register-container').style.display = 'none';
+        document.getElementById('forgot-password-container').style.display = 'none';
+        document.getElementById('verification-container').style.display = 'none';
+        document.getElementById('manager-container').style.display = 'block';
+    }
 
-1. Right-click **Start course** and open the link in a new tab.
-2. In the new tab, most of the prompts will automatically fill in for you.
-   - For owner, choose your personal account or an organization to host the repository.
-   - We recommend creating a public repository, as private repositories will [use Actions minutes](https://docs.github.com/en/billing/managing-billing-for-github-actions/about-billing-for-github-actions).
-   - Scroll down and click the **Create repository** button at the bottom of the form.
-3. After your new repository is created, wait about 20 seconds, then refresh the page. Follow the step-by-step instructions in the new repository's README.
+    // Регистрация
+    function register() {
+        const email = document.getElementById('register-email').value;
+        const password = document.getElementById('register-password').value;
 
-<footer>
+        if (!/^[a-zA-Z0-9]+$/.test(password)) {
+            alert('Паролата трябва да съдържа само английски букви и числа.');
+            return;
+        }
 
-<!--
-  <<< Author notes: Footer >>>
-  Add a link to get support, GitHub status page, code of conduct, license link.
--->
+        if (users[email]) {
+            alert('Този имейл вече е регистриран.');
+            return;
+        }
 
----
+        users[email] = password;
+        alert('Регистрацията е успешна! Моля, потвърдете вашия акаунт чрез 2FA.');
 
-Get help: [Post in our discussion board](https://github.com/orgs/skills/discussions/categories/github-pages) &bull; [Review the GitHub status page](https://www.githubstatus.com/)
+        loggedInUser = email;
 
-&copy; 2023 GitHub &bull; [Code of Conduct](https://www.contributor-covenant.org/version/2/1/code_of_conduct/code_of_conduct.md) &bull; [MIT License](https://gh.io/mit)
+        // Запазване на имейла в localStorage
+        localStorage.setItem('email', email);
 
-</footer>
+        // Генериране на случайния 2FA код
+        const verificationCode = Math.floor(100000 + Math.random() * 900000); // 6 цифри
+        verificationCodes[email] = verificationCode;
+
+        alert(`Вашият 2FA код е: ${verificationCode}`);  // В реален проект ще изпращате имейл тук
+
+        // Преминаване към екрана за въвеждане на код
+        showVerification();
+    }
+
+    // Вход
+    function login() {
+        const email = document.getElementById('login-email').value;
+        const password = document.getElementById('login-password').value;
+
+        if (users[email] && users[email] === password) {
+            loggedInUser = email;
+
+            // Генериране на случайния 2FA код
+            const verificationCode = Math.floor(100000 + Math.random() * 900000); // 6 цифри
+            verificationCodes[email] = verificationCode;
+
+            alert(`Вашият 2FA код е: ${verificationCode}`);  // В реален проект ще изпращате имейл тук
+
+            // Преминаване към екрана за въвеждане на код
+            showVerification();
+        } else {
+            alert('Грешен имейл или парола.');
+        }
+    }
+
+    // Потвърждение на 2FA код
+    function verifyCode() {
+        const enteredCode = document.getElementById('verification-code').value;
+        const expectedCode = verificationCodes[loggedInUser];
+
+        if (enteredCode === expectedCode.toString()) {
+            alert('Входът е успешен!');
+            showManager();
+        } else {
+            alert('Невалиден код!');
+        }
+    }
+
+    // Забравена парола
+    function resetPassword() {
+        const email = document.getElementById('forgot-email').value;
+
+        if (!users[email]) {
+            alert('Имейлът не е регистриран.');
+            return;
+        }
+
+        const newPassword = prompt('Моля, въведете нова парола:');
+        if (newPassword) {
+            users[email] = newPassword;
+            alert('Паролата е променена успешно!');
+            showLogin();
+        }
+    }
+
+    // Качване на файл
+    function uploadFile() {
+        const fileInput = document.getElementById('file-input');
+        const file = fileInput.files[0];
+
+        if (!file) {
+            alert('Моля, изберете файл за качване.');
+            return;
+        }
+
+        uploadedFile = file;
+        const downloadLink = document.getElementById('download-link');
+        downloadLink.href = URL.createObjectURL(file);
+        downloadLink.download = file.name;
+
+        document.getElementById('download-link-container').style.display = 'block';
+        alert('Файлът беше качен успешно и е готов за изтегляне!');
+    }
+
+    // Изход
+    function logout() {
+        loggedInUser = null;
+        localStorage.removeItem('email');
+        alert('Излязохте успешно.');
+        showLogin();
+    }
+
+    // Инициализация
+    showLogin();
+</script>
+
+</body>
+</html>
